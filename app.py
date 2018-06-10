@@ -14,7 +14,7 @@ DEFAULT_RESPONSE = 'Sorry. We cannot help you at the moment. Please, try again l
 
 def auto_reply(question):
     if question == '' or question is None:
-        return 'Sorry, I do not comprehend the question as asked..'
+        return 'Sorry, I do not comprehend the question as asked.. Please rephrase.'
     tokens = cleanup(question.lower())
     if tokens:
         freq = nltk.FreqDist(tokens)
@@ -33,12 +33,9 @@ def auto_reply(question):
 def cleanup(sentence):
     tmp = [ token for token in nltk.word_tokenize(sentence) if token not in string.punctuation]
     tokens = []
-    for token in tmp: #TODO: figure out 'nested list comprehension'
-        try:
-            if token not in stopwords.words(LANGUAGE):
-                tokens.append(token)
-        except ValueError:
-            pass # do nothing. this is okay.
+    for token in tmp: #TODO: figure out 'nested list comprehension', and make this bit more pythonic
+        if token not in stopwords.words(LANGUAGE):
+            tokens.append(token)
     return tokens
 
 def fetch_response(keyword):
@@ -51,10 +48,10 @@ def fetch_response(keyword):
         c = conn.cursor()
         c.execute(query, {'tag': keyword.lower()})
         raw_data = c.fetchone() 
-        response = raw_data[0] if raw_data is not None else 'No data found. You query couldn\'t be processed at the moment.' 
+        response = raw_data[0] if raw_data is not None else 'No data found.' 
     except Exception as e:
-        pass # we should avoid doing this.
-    # close connection -- ALWAYS!!!!
+        pass #TODO: log exception, perhaps
+    # close connection
     if conn is not None:
         conn.close()
     return response
@@ -67,6 +64,6 @@ if __name__ == '__main__':
             if text:
                 print('\n** Auto-Reply: {}'.format(auto_reply(text)))
             else:
-                print('No data to analyze')
+                print('No data to analyze.')
     except KeyboardInterrupt:
-        pass  # not good, we'd do better
+        pass  # in case, someone does a CTRL-C/CTRL-Z, just in case
