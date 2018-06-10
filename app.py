@@ -15,8 +15,7 @@ DEFAULT_RESPONSE = 'Sorry. We cannot help you at the moment. Please, try again l
 def auto_reply(question):
     if question == '' or question is None:
         return 'Sorry, I do not comprehend the question as asked..'
-
-    tokens = cleanup(question)
+    tokens = cleanup(question.lower())
     if tokens:
         freq = nltk.FreqDist(tokens)
         # plot token by frequency
@@ -28,18 +27,19 @@ def auto_reply(question):
         word = max(freq.items(), key=operator.itemgetter(1))[0]
         # fetch automated response
         return fetch_response(word)
-    return 'Please provide more details in your question.'
+    return DEFAULT_RESPONSE
 
     
 def cleanup(sentence):
-    tokens = nltk.word_tokenize(sentence)
-    # do some cleanup - remove unecessary word(s) e.g ?,.@#%...
-    punctuation = string.printable
-    for token in tokens:
-        if token.lower() in stopwords.words(LANGUAGE) or token in punctuation:
-            tokens.remove(token)
-    return tokens if len(tokens) > 0 else None
-
+    tmp = [ token for token in nltk.word_tokenize(sentence) if token not in string.punctuation]
+    tokens = []
+    for token in tmp: #TODO: figure out 'nested list comprehension'
+        try:
+            if token not in stopwords.words(LANGUAGE):
+                tokens.append(token)
+        except ValueError:
+            pass # do nothing. this is okay.
+    return tokens
 
 def fetch_response(keyword):
     query = 'SELECT response FROM automated_responses WHERE tag=:tag ORDER BY 1 LIMIT 1'
