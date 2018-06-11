@@ -23,7 +23,7 @@ def auto_reply(question):
         if answer.upper() == 'Y':
             # using matplotlib to display result.. a new window should open
             freq.plot(15, cumulative=False, title='Word count', linewidth=3)
-        # get most repeated the word/token
+        # get most repeated word/token
         word = max(freq.items(), key=operator.itemgetter(1))[0]
         # fetch automated response
         return fetch_response(word)
